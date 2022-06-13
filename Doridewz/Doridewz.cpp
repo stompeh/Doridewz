@@ -4,7 +4,7 @@
 //#include <stdio.h>
 //#pragma comment(lib,"ws2_32")
 //#include <ws2tcpip.h>
-#include "Friends.h"
+//#include "Friends.h"
 
 #include <Windows.h>
 #include <iostream>
