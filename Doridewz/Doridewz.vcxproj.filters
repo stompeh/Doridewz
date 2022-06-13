@@ -18,18 +18,9 @@
     <ClCompile Include="Doridewz.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Friends.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Friends.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="GetModuleHandleClass.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -39,7 +30,7 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="..\..\..\..\Desktop\MDcan256.ico">
+    <Image Include=".\MDcan256.ico">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>
