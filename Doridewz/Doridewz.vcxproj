@@ -176,7 +176,7 @@
     <ResourceCompile Include="Doridewz.rc" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="..\..\..\..\Desktop\MDcan256.ico" />
+    <Image Include="MDcan256.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
