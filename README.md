@@ -1,6 +1,6 @@
 # Doridewz
 
-This program should be considered malicious. It was created to become familiarized with the Win32 API and trying to avoid AV detection.
+This program was created to become familiarized with the Win32 API and attempting to avoid AV detection.
 Do not use on a system that is not yours.
 
-Doridewz enumerates all local disks, finds every .EXE file, and replaces the icon with a mountain dew can. There is currently no "undo" method.
+Doridewz finds all .EXE files on any local disk it can find (might work on network drives as well, haven't tested). The icons inside the EXE are replaced with a Mountain Dew can. Planning to also replace the default shell system icons for text/dll/etc files.
