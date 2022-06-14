@@ -1,10 +1,4 @@
-﻿//#define _WINSOCK_DEPRECATED_NO_WARNINGS
-
-#include "resource.h"
-//#include <stdio.h>
-//#pragma comment(lib,"ws2_32")
-//#include <ws2tcpip.h>
-#include "Friends.h"
+﻿#include "resource.h"
 
 #include <Windows.h>
 #include <iostream>
@@ -18,21 +12,6 @@
 
 #pragma comment(lib, "sfc")
 
-//typedef HRSRC(WINAPI* d_FindResourceExW)(
-//        
-//);
-//
-//typedef UINT(WINAPI* d_GetDriveType)(
-//    __in_opt LPCWSTR lpRootPathName
-//);
-//
-//
-//typedef HMODULE(WINAPI* d_LoadLibraryExW)(
-//    __in        LPCWSTR     lpLibFileName,
-//    HANDLE      hFile,
-//    __in        DWORD       dwFlags
-//);
-
 
 std::vector<std::wstring> GetDriveLetters()
 {
@@ -40,7 +19,6 @@ std::vector<std::wstring> GetDriveLetters()
     wchar_t driveSlash[] = {':','\\',0};
     std::vector<std::wstring> foundDrives;
     wchar_t diskLetter = 67; // Start with 'C'
-    //std::wstring da = driveSlash;
     
     for (short i = 1; i != 25; i++)
     {
@@ -98,7 +76,7 @@ void ReplaceEXEIconResources(std::filesystem::path* pathStart, LPVOID lpMDcanIco
         if (itr_path.path().extension() == exeExt)
         {
             const std::wstring currentPath = itr_path.path().wstring();
-            const std::wstring currentPathFilename = itr_path.path().filename().wstring();
+            //const std::wstring currentPathFilename = itr_path.path().filename().wstring(); // For debugging
 
             if (::SfcIsFileProtected(NULL, currentPath.c_str()))
             {
@@ -120,7 +98,7 @@ void ReplaceEXEIconResources(std::filesystem::path* pathStart, LPVOID lpMDcanIco
                     case 1813:
                     {
                         
-                        std::wcout << currentPath << "\n" << "No icon resources detected, attempting to add" << "\n";
+                        std::wcout << currentPath << "\n" << "No icon resources detected, attempting to add\n";
                         if (!::FreeLibrary(hmTheExe))
                         {
                             resNames.clear();
@@ -134,19 +112,19 @@ void ReplaceEXEIconResources(std::filesystem::path* pathStart, LPVOID lpMDcanIco
                         }
                         if (!::UpdateResourceW(hUpdateResource, MAKEINTRESOURCE(RT_GROUP_ICON), L"101", 1033, lpMDcanIcon, dwMDcanIconSize))
                         {
-                            std::wcout << ::GetLastError() << " Could not update group resource." << "\n";
+                            std::wcout << ::GetLastError() << " Could not update group resource.\n";
                             resNames.clear();
                             continue;
                         }
                         if (!::UpdateResourceW(hUpdateResource, MAKEINTRESOURCE(RT_ICON), NULL, NULL, lpMDcanIcon, dwMDcanIconSize))
                         {
-                            std::wcout << ::GetLastError() << " Could not update icon resource." << "\n";
+                            std::wcout << ::GetLastError() << " Could not update icon resource.\n";
                             resNames.clear();
                             continue;
                         }
                         if (!::EndUpdateResourceW(hUpdateResource, false))
                         {
-                            std::wcout << ::GetLastError() << " Could not end update resource." << "\n";
+                            std::wcout << ::GetLastError() << " Could not end update resource.\n";
                             resNames.clear();
                             continue;
                         }
