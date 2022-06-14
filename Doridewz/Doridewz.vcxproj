@@ -165,11 +165,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Doridewz.cpp" />
-    <ClCompile Include="Friends.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Friends.h" />
-    <ClInclude Include="GetModuleHandleClass.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
