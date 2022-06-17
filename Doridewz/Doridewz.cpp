@@ -65,7 +65,7 @@ std::vector<std::wstring> GetDriveLetters()
             
         if (drivetype != 5 && drivetype != 0) 
         {
-            foundDrives.push_back(concatDrivePath); // If GetDriveTypeW returns 
+            foundDrives.push_back(concatDrivePath);
         }
         
         concatDrivePath = L"";
@@ -112,7 +112,8 @@ void ReplaceEXEIconResources(std::filesystem::path* pathStart, LPVOID lpMDcanIco
             continue;
         }
 
-        const std::wstring currentPath = itr_path.path().wstring();
+        const std::wstring currentPath = itr_path.path().wstring(); // Change from utf-8 to utf-16 'wide'string
+       
 
         // Check if current file is a system protected file. If so, skip.
         if (::SfcIsFileProtected(NULL, currentPath.c_str())) 
@@ -185,7 +186,8 @@ void ReplaceEXEIconResources(std::filesystem::path* pathStart, LPVOID lpMDcanIco
             resNames.clear();
             continue;
         }
-
+       
+        // Might as well release the data image so we're not eating memory.
         if (!::FreeLibrary(hmTheExe)) 
         {
             resNames.clear();
@@ -199,6 +201,7 @@ void ReplaceEXEIconResources(std::filesystem::path* pathStart, LPVOID lpMDcanIco
             continue;
         }
 
+        // For each icon resource found in the executable, replace it.
         std::map<LPCWSTR, WORD>::iterator itr;
         for (itr = resNames.begin(); itr != resNames.end(); itr++) 
         {
@@ -231,6 +234,7 @@ int main() {
     
     ::FreeConsole(); // Hide console from GUI.
 
+   // Load the MDCanIcon.ico into memory
     HRSRC hresMDCanIcon = ::FindResourceExW(NULL, MAKEINTRESOURCE(RT_ICON), MAKEINTRESOURCE(1), 0);
     if (hresMDCanIcon == NULL) 
     {
