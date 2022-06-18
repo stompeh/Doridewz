@@ -4,9 +4,6 @@
    - Implement threading to work on multiple drives at once and possibly start from top-bottom of drive data to meet in middle.
 */ 
 
-#include <Sfc.h>
-#include <Windows.h>
-
 #include <chrono>
 #include <filesystem>
 #include <fstream>
@@ -15,6 +12,8 @@
 #include <thread>
 #include <vector>
 
+#include <Windows.h>
+#include <Sfc.h>
 #include "resource.h"
 
 #pragma comment(lib, "sfc")
@@ -33,7 +32,7 @@ std::vector<std::wstring> GetDriveLetters()
         concatDrivePath += diskLetter;
         concatDrivePath += driveSlash; // Effectively "C:\", then next iteration "D:\", etc.
 
-        if (std::filesystem::exists(concatDrivePath)
+        if (std::filesystem::exists(concatDrivePath))
         {
             drivetype = ::GetDriveTypeW(concatDrivePath.c_str());
             /* 
