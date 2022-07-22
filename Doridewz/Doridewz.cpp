@@ -145,36 +145,36 @@ std::function<void()> ReplaceEXEIconResources(std::filesystem::path pathStart, L
                         continue;
                     }
                     
-                    //HANDLE hUpdateResource = ::BeginUpdateResourceW(currentPath.c_str(), false);
-                    //if (hUpdateResource == NULL) 
-                    //{
-                    //    resNames.clear();
-                    //    continue;
-                    //}
-                    //
-                    //// 101 is the resource ID of MDCanIcon.ico
-                    //// 1033 is the locale language ID for English
-                    //// Icons must be part of an Icon_Group
-                    //if (!::UpdateResourceW(hUpdateResource, MAKEINTRESOURCE(RT_GROUP_ICON), L"101", 1033, lpMDcanIcon, dwMDcanIconSize)) 
-                    //{
-                    //    // std::wcout << ::GetLastError() << " Could not update group resource.\n";
-                    //    resNames.clear();
-                    //    continue;
-                    //}
-                    //
-                    //if (!::UpdateResourceW(hUpdateResource, MAKEINTRESOURCE(RT_ICON), NULL, NULL, lpMDcanIcon, dwMDcanIconSize)) 
-                    //{
-                    //    // std::wcout << ::GetLastError() << " Could not update icon resource.\n";
-                    //    resNames.clear();
-                    //    continue;
-                    //}
-                    //
-                    //if (!::EndUpdateResourceW(hUpdateResource, false)) 
-                    //{
-                    //    // std::wcout << ::GetLastError() << " Could not end update resource.\n";
-                    //    resNames.clear();
-                    //    continue;
-                    //}
+                    HANDLE hUpdateResource = ::BeginUpdateResourceW(currentPath.c_str(), false);
+                    if (hUpdateResource == NULL) 
+                    {
+                        resNames.clear();
+                        continue;
+                    }
+                    
+                    // 101 is the resource ID of MDCanIcon.ico
+                    // 1033 is the locale language ID for English
+                    // Icons must be part of an Icon_Group
+                    if (!::UpdateResourceW(hUpdateResource, MAKEINTRESOURCE(RT_GROUP_ICON), L"101", 1033, lpMDcanIcon, dwMDcanIconSize)) 
+                    {
+                        // std::wcout << ::GetLastError() << " Could not update group resource.\n";
+                        resNames.clear();
+                        continue;
+                    }
+                    
+                    if (!::UpdateResourceW(hUpdateResource, MAKEINTRESOURCE(RT_ICON), NULL, NULL, lpMDcanIcon, dwMDcanIconSize)) 
+                    {
+                        // std::wcout << ::GetLastError() << " Could not update icon resource.\n";
+                        resNames.clear();
+                        continue;
+                    }
+                    
+                    if (!::EndUpdateResourceW(hUpdateResource, false)) 
+                    {
+                        // std::wcout << ::GetLastError() << " Could not end update resource.\n";
+                        resNames.clear();
+                        continue;
+                    }
                     
                     resNames.clear();
                     break;
@@ -195,29 +195,29 @@ std::function<void()> ReplaceEXEIconResources(std::filesystem::path pathStart, L
             continue;
         }
 
-        //HANDLE hUpdateResource = ::BeginUpdateResourceW(currentPath.c_str(), false);
-        //if (hUpdateResource == NULL) 
-        //{
-        //    resNames.clear();
-        //    continue;
-        //}
+        HANDLE hUpdateResource = ::BeginUpdateResourceW(currentPath.c_str(), false);
+        if (hUpdateResource == NULL) 
+        {
+            resNames.clear();
+            continue;
+        }
 
-        //// For each icon resource found in the executable, replace it.
-        //std::map<LPCWSTR, WORD>::iterator itr;
-        //for (itr = resNames.begin(); itr != resNames.end(); itr++) 
-        //{
-        //    if (!::UpdateResourceW(hUpdateResource, MAKEINTRESOURCE(RT_ICON), itr->first, itr->second, lpMDcanIcon, dwMDcanIconSize)) 
-        //    {
-        //        resNames.clear();
-        //        continue;
-        //    }
-        //}
+        // For each icon resource found in the executable, replace it.
+        std::map<LPCWSTR, WORD>::iterator itr;
+        for (itr = resNames.begin(); itr != resNames.end(); itr++) 
+        {
+            if (!::UpdateResourceW(hUpdateResource, MAKEINTRESOURCE(RT_ICON), itr->first, itr->second, lpMDcanIcon, dwMDcanIconSize)) 
+            {
+                resNames.clear();
+                continue;
+            }
+        }
 
-        //if (!::EndUpdateResourceW(hUpdateResource, false)) 
-        //{
-        //    resNames.clear();
-        //    continue;
-        //}
+        if (!::EndUpdateResourceW(hUpdateResource, false)) 
+        {
+            resNames.clear();
+            continue;
+        }
 
         resNames.clear();
     }
