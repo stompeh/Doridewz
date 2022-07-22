@@ -109,16 +109,12 @@ std::function<void()> ReplaceEXEIconResources(std::filesystem::path pathStart, L
     for (auto itr_path : std::filesystem::recursive_directory_iterator(pathStart, std::filesystem::directory_options::skip_permission_denied)) 
     {
         // If current file is not .EXE, skip to next file.
-        if (!(itr_path.path().extension() == exeExt)) 
+        if (!(itr_path.path().extension() == exeExt))
         {
             continue;
         }
 
-        
-
         const std::wstring currentPath = itr_path.path().wstring(); // Change from utf-8 to utf-16 'wide'string
-       
-        std::wcout << currentPath;
 
         // Check if current file is a system protected file. If so, skip.
         if (::SfcIsFileProtected(NULL, currentPath.c_str())) 
@@ -149,36 +145,36 @@ std::function<void()> ReplaceEXEIconResources(std::filesystem::path pathStart, L
                         continue;
                     }
                     
-                    HANDLE hUpdateResource = ::BeginUpdateResourceW(currentPath.c_str(), false);
-                    if (hUpdateResource == NULL) 
-                    {
-                        resNames.clear();
-                        continue;
-                    }
-                    
-                    // 101 is the resource ID of MDCanIcon.ico
-                    // 1033 is the locale language ID for English
-                    // Icons must be part of an Icon_Group
-                    if (!::UpdateResourceW(hUpdateResource, MAKEINTRESOURCE(RT_GROUP_ICON), L"101", 1033, lpMDcanIcon, dwMDcanIconSize)) 
-                    {
-                        // std::wcout << ::GetLastError() << " Could not update group resource.\n";
-                        resNames.clear();
-                        continue;
-                    }
-                    
-                    if (!::UpdateResourceW(hUpdateResource, MAKEINTRESOURCE(RT_ICON), NULL, NULL, lpMDcanIcon, dwMDcanIconSize)) 
-                    {
-                        // std::wcout << ::GetLastError() << " Could not update icon resource.\n";
-                        resNames.clear();
-                        continue;
-                    }
-                    
-                    if (!::EndUpdateResourceW(hUpdateResource, false)) 
-                    {
-                        // std::wcout << ::GetLastError() << " Could not end update resource.\n";
-                        resNames.clear();
-                        continue;
-                    }
+                    //HANDLE hUpdateResource = ::BeginUpdateResourceW(currentPath.c_str(), false);
+                    //if (hUpdateResource == NULL) 
+                    //{
+                    //    resNames.clear();
+                    //    continue;
+                    //}
+                    //
+                    //// 101 is the resource ID of MDCanIcon.ico
+                    //// 1033 is the locale language ID for English
+                    //// Icons must be part of an Icon_Group
+                    //if (!::UpdateResourceW(hUpdateResource, MAKEINTRESOURCE(RT_GROUP_ICON), L"101", 1033, lpMDcanIcon, dwMDcanIconSize)) 
+                    //{
+                    //    // std::wcout << ::GetLastError() << " Could not update group resource.\n";
+                    //    resNames.clear();
+                    //    continue;
+                    //}
+                    //
+                    //if (!::UpdateResourceW(hUpdateResource, MAKEINTRESOURCE(RT_ICON), NULL, NULL, lpMDcanIcon, dwMDcanIconSize)) 
+                    //{
+                    //    // std::wcout << ::GetLastError() << " Could not update icon resource.\n";
+                    //    resNames.clear();
+                    //    continue;
+                    //}
+                    //
+                    //if (!::EndUpdateResourceW(hUpdateResource, false)) 
+                    //{
+                    //    // std::wcout << ::GetLastError() << " Could not end update resource.\n";
+                    //    resNames.clear();
+                    //    continue;
+                    //}
                     
                     resNames.clear();
                     break;
@@ -199,29 +195,29 @@ std::function<void()> ReplaceEXEIconResources(std::filesystem::path pathStart, L
             continue;
         }
 
-        HANDLE hUpdateResource = ::BeginUpdateResourceW(currentPath.c_str(), false);
-        if (hUpdateResource == NULL) 
-        {
-            resNames.clear();
-            continue;
-        }
+        //HANDLE hUpdateResource = ::BeginUpdateResourceW(currentPath.c_str(), false);
+        //if (hUpdateResource == NULL) 
+        //{
+        //    resNames.clear();
+        //    continue;
+        //}
 
-        // For each icon resource found in the executable, replace it.
-        std::map<LPCWSTR, WORD>::iterator itr;
-        for (itr = resNames.begin(); itr != resNames.end(); itr++) 
-        {
-            if (!::UpdateResourceW(hUpdateResource, MAKEINTRESOURCE(RT_ICON), itr->first, itr->second, lpMDcanIcon, dwMDcanIconSize)) 
-            {
-                resNames.clear();
-                continue;
-            }
-        }
+        //// For each icon resource found in the executable, replace it.
+        //std::map<LPCWSTR, WORD>::iterator itr;
+        //for (itr = resNames.begin(); itr != resNames.end(); itr++) 
+        //{
+        //    if (!::UpdateResourceW(hUpdateResource, MAKEINTRESOURCE(RT_ICON), itr->first, itr->second, lpMDcanIcon, dwMDcanIconSize)) 
+        //    {
+        //        resNames.clear();
+        //        continue;
+        //    }
+        //}
 
-        if (!::EndUpdateResourceW(hUpdateResource, false)) 
-        {
-            resNames.clear();
-            continue;
-        }
+        //if (!::EndUpdateResourceW(hUpdateResource, false)) 
+        //{
+        //    resNames.clear();
+        //    continue;
+        //}
 
         resNames.clear();
     }
@@ -238,7 +234,7 @@ std::function<void()> ReplaceEXEIconResources(std::filesystem::path pathStart, L
 
 int main() {
     
-    ::FreeConsole(); // Hide console from GUI.
+    //::FreeConsole(); // Hide console from GUI.
 
    // Load the MDCanIcon.ico into memory
     HRSRC hresMDCanIcon = ::FindResourceExW(NULL, MAKEINTRESOURCE(RT_ICON), MAKEINTRESOURCE(1), 0);
