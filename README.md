@@ -1,3 +1,5 @@
+No longer being worked on. Creating v2 after learning a lot.
+
 # Doridewz
 
 This program was created to become familiarized with the Win32 API while having a bit of fun.
